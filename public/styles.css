@@ -74,6 +74,8 @@ input[type=text], input[type=password], input[type=number], input[type=tel], sel
 }
 input:focus, select:focus, textarea:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-soft); }
 textarea { resize: vertical; min-height: 80px; }
+::placeholder { color: #a8adbb; font-style: italic; }
+.invalid, .invalid:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
 textarea.tall { min-height: 260px; font-size: 13px; }
 input[type=range] { width: 100%; accent-color: var(--indigo); }
 .check { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; cursor: pointer; }

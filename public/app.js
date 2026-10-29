@@ -424,12 +424,12 @@ async function renderAgentEditor(id) {
           <h2><span class="step">2</span>Script</h2>
           <div class="gen-box">
             <h3>✨ Generate with Sarvam AI</h3>
-            <label class="field">What is the call for?<textarea data-f="purpose" placeholder="Remind customers about their EMI due on {{due_date}} and ask when they will pay. If they already paid, thank them.">${esc(d.purpose)}</textarea></label>
+            <label class="field">What is the call for? <span class="hint">Required. Write it in your own words, in any language.</span><textarea data-f="purpose" placeholder="Example: Remind customers about their EMI due on {{due_date}} and ask when they will pay. If they already paid, thank them.">${esc(d.purpose)}</textarea></label>
             <div class="grid cols-2" style="gap:12px">
               <label class="field">Company / brand<input type="text" data-f="company" value="${esc(d.company)}"></label>
               <label class="field">Tone<select data-f="tone">${['friendly', 'professional', 'warm and empathetic', 'energetic sales', 'formal'].map((t) => `<option ${t === d.tone ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
             </div>
-            <label class="field">Offers, FAQs, rules (optional)<textarea data-f="details" placeholder="Late fee is ₹500 after 5 days. Payment link is sent by SMS. Office hours 10am–6pm.">${esc(d.details)}</textarea></label>
+            <label class="field">Offers, FAQs, rules (optional)<textarea data-f="details" placeholder="Example: Late fee is ₹500 after 5 days. Payment link is sent by SMS. Office hours 10am–6pm.">${esc(d.details)}</textarea></label>
             <button class="btn dark" id="generate" data-busy="Writing script…">✨ Generate script</button>
             <span class="muted small" style="margin-left:8px">Replaces the fields below.</span>
           </div>
@@ -532,7 +532,14 @@ async function renderAgentEditor(id) {
   $$('[data-speak]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); const t = d[b.dataset.speak]; if (t) preview(fillSample(t), d.speaker, b); }));
   $$('[data-var]').forEach((c) => c.addEventListener('click', () => { navigator.clipboard?.writeText(`{{${c.dataset.var}}}`); toast(`Copied {{${c.dataset.var}}}`); }));
 
+  $('[data-f="purpose"]').addEventListener('input', (e) => e.target.classList.remove('invalid'));
   $('#generate').addEventListener('click', (e) => busy(e.currentTarget, async () => {
+    if (!d.purpose.trim()) {
+      const box = $('[data-f="purpose"]');
+      box.classList.add('invalid');
+      box.focus();
+      throw new Error('First type what the call is for in the highlighted box. The grey text is only an example.');
+    }
     const s = await api('/agents/generate-script', { method: 'POST', body: { ...d, columns } });
     for (const [k, v] of Object.entries(s)) if (v) setField(k, v);
     $('#try-text').value = d.openingLine;
