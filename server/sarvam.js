@@ -2,10 +2,19 @@
 const BASE = 'https://api.sarvam.ai';
 
 function apiKey() {
-  const key = process.env.SARVAM_API_KEY;
-  if (!key) throw Object.assign(new Error('SARVAM_API_KEY is not configured on the server'), { status: 500 });
+  // Tolerate keys pasted into a hosting dashboard with spaces or quotes around them.
+  const key = (process.env.SARVAM_API_KEY || '').trim().replace(/^["']|["']$/g, '');
+  if (!key) throw Object.assign(new Error('SARVAM_API_KEY is not set on the server. Add it to .env, or on Render under Environment, then restart.'), { status: 500 });
   return key;
 }
+
+const HINTS = {
+  401: 'Sarvam rejected the API key. Check SARVAM_API_KEY on the server (on Render: Environment tab) and redeploy.',
+  403: 'Sarvam rejected the API key. Check SARVAM_API_KEY on the server (on Render: Environment tab) and redeploy.',
+  402: 'Your Sarvam account has run out of credits. Top up at dashboard.sarvam.ai.',
+  429: 'Sarvam rate limit or credit limit reached. Wait a minute, or check your plan at dashboard.sarvam.ai.',
+  503: 'This Sarvam model is temporarily unavailable. Try again shortly or pick the other model in the agent settings.',
+};
 
 async function parse(res) {
   const text = await res.text();
@@ -14,9 +23,26 @@ async function parse(res) {
   if (!res.ok) {
     const msg = body?.error?.message || body?.message || body?.detail || text.slice(0, 300) || res.statusText;
     const detail = (typeof msg === 'string' ? msg : JSON.stringify(msg)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    throw Object.assign(new Error(`Sarvam API error (${res.status}): ${detail}`), { status: 502, upstreamStatus: res.status });
+    const hint = HINTS[res.status] ? `${HINTS[res.status]} ` : '';
+    throw Object.assign(new Error(`${hint}Sarvam API error (${res.status}): ${detail}`), { status: 502, upstreamStatus: res.status });
   }
   return body;
+}
+
+// Quick end-to-end check of the key, used by the dashboard's connection test.
+async function check() {
+  const results = {};
+  try { apiKey(); } catch (err) { return { ok: false, error: err.message }; }
+  const probe = async (name, fn) => {
+    const started = Date.now();
+    try { await fn(); results[name] = { ok: true, ms: Date.now() - started }; }
+    catch (err) { results[name] = { ok: false, error: err.cause?.message ? `${err.message}: ${err.cause.message}` : err.message }; }
+  };
+  await Promise.all([
+    probe('voice', () => tts({ text: 'नमस्ते', languageCode: 'hi-IN', model: 'bulbul:v3', speaker: 'priya' })),
+    probe('llm', () => chat([{ role: 'user', content: 'Reply with OK' }], { maxTokens: 256, reasoning: 'low' })),
+  ]);
+  return { ok: Object.values(results).every((r) => r.ok), ...results };
 }
 
 // Text-to-speech (Bulbul). Returns a WAV Buffer.
@@ -112,4 +138,4 @@ async function chatJson(messages, options) {
   }
 }
 
-module.exports = { tts, stt, chat, chatJson, extractJson };
+module.exports = { tts, stt, chat, chatJson, extractJson, check };

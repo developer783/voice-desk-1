@@ -125,14 +125,15 @@ async function renderDashboard() {
   const s = await api('/stats');
   const totalOutcomes = Object.values(s.outcomes).reduce((a, b) => a + b, 0) || 1;
   const setup = [];
-  if (!S.config.sarvamReady) setup.push('Add <b>SARVAM_API_KEY</b> to the server <code>.env</code> file.');
+  if (!S.config.sarvamReady) setup.push('Add <b>SARVAM_API_KEY</b> to the server <code>.env</code> file (on Render: the Environment tab), then restart.');
   if (!S.config.telephony.ready) setup.push(`Real phone calls need Twilio settings on the server (missing: ${S.config.telephony.missing.join(', ')}). Browser test calls work already.`);
 
   view.innerHTML = `
     <div class="page-head">
       <div><h1>Dashboard</h1><p class="muted">Your calling activity at a glance</p></div>
-      <div class="row"><a class="btn" href="#/contacts">Upload contacts</a><a class="btn primary" href="#/agents/new">+ New agent</a></div>
+      <div class="row"><button class="btn" id="check-sarvam" data-busy="Checking…">⚡ Test Sarvam connection</button><a class="btn" href="#/contacts">Upload contacts</a><a class="btn primary" href="#/agents/new">+ New agent</a></div>
     </div>
+    <div id="check-result"></div>
     ${setup.map((m) => `<div class="banner warn">⚠ <span>${m}</span></div>`).join('')}
     <div class="grid cols-4">
       ${[['Contacts', s.contacts], ['Agents', s.agents], ['Calls today', s.today], ['Live now', s.live]].map(([l, v]) => `
@@ -154,6 +155,12 @@ async function renderDashboard() {
       </div>
     </div>`;
   bindCallRows();
+  $('#check-sarvam').addEventListener('click', (e) => busy(e.currentTarget, async () => {
+    const r = await api('/check-sarvam');
+    const line = (name, x) => (x ? `<div>${x.ok ? '✅' : '❌'} <b>${name}</b> ${x.ok ? `working (${x.ms} ms)` : esc(x.error)}</div>` : '');
+    $('#check-result').innerHTML = `<div class="banner ${r.ok ? '' : 'warn'}" style="${r.ok ? 'background:var(--green-soft);color:var(--green);border:1px solid #cdebd9' : ''};flex-direction:column;align-items:flex-start">
+      ${r.error ? `❌ ${esc(r.error)}` : line('Voice (Bulbul)', r.voice) + line('Language model', r.llm)}</div>`;
+  }));
   if (s.live) S.timer = setInterval(() => location.hash.startsWith('#/dashboard') || !location.hash ? renderDashboard().catch(() => {}) : null, 5000);
 }
 

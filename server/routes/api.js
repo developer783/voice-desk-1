@@ -30,6 +30,8 @@ router.get('/config', (req, res) => {
   });
 });
 
+router.get('/check-sarvam', ah(async (req, res) => res.json(await sarvam.check())));
+
 router.get('/stats', (req, res) => {
   const ended = state.calls.filter((c) => c.endedAt);
   const today = new Date().toISOString().slice(0, 10);
