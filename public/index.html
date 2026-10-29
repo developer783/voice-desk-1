@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voice Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="login" class="login hidden">
+    <form class="login-card" id="login-form">
+      <div class="brand big"><span class="logo">◉</span> Voice Desk</div>
+      <p class="muted">Sign in to continue</p>
+      <input type="password" name="password" placeholder="Password" autocomplete="current-password" required>
+      <button class="btn primary" type="submit">Sign in</button>
+      <p class="error-text" id="login-error"></p>
+    </form>
+  </div>
+
+  <div id="shell" class="shell hidden">
+    <aside class="sidebar">
+      <div class="brand"><span class="logo">◉</span> Voice Desk</div>
+      <nav>
+        <a href="#/dashboard" data-nav="dashboard"><span>▦</span> Dashboard</a>
+        <a href="#/contacts" data-nav="contacts"><span>☰</span> Contacts</a>
+        <a href="#/agents" data-nav="agents"><span>✦</span> Agents</a>
+        <a href="#/calls" data-nav="calls"><span>☏</span> Call logs</a>
+        <a href="#/test" data-nav="test"><span>◎</span> Test call</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div id="status-pills"></div>
+        <button class="link hidden" id="logout">Sign out</button>
+      </div>
+    </aside>
+    <main id="view" class="view"></main>
+  </div>
+
+  <div id="modal" class="modal hidden"><div class="modal-card" id="modal-card"></div></div>
+  <div id="toasts" class="toasts"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
