@@ -34,6 +34,17 @@ At this point **browser test calls** work. You talk to the agent through your mi
 
 The sidebar shows "Phone line" in green once phone calling is set up. Before calling Indian numbers, check the TRAI/DND rules that apply to your use case.
 
+## Deploy on Render
+
+1. In Render, choose **New → Blueprint** and select this repository. Render reads `render.yaml`.
+2. When asked, fill in `SARVAM_API_KEY` and `APP_PASSWORD`. Fill in the three `TWILIO_*` values too if you want real phone calls; you can leave them empty and add them later under **Environment**.
+3. Deploy and open the `https://….onrender.com` URL.
+
+What the blueprint sets up:
+- **Plan:** Starter instance with a 1 GB disk at `/var/data`, where contacts, agents, calls and audio are kept. On the free plan nothing survives a restart, and the service sleeps when idle, which breaks live calls.
+- **Phone callback URL:** Twilio webhooks use Render's public URL automatically. You don't need to set `PUBLIC_BASE_URL`.
+- **Login:** on Render the dashboard stays locked until `APP_PASSWORD` is set.
+
 ## Using it
 
 1. **Contacts**: upload a CSV with a `phone` column. `name` and every other column (city, due_amount…) become `{{variables}}`. Use `public/sample-contacts.csv` as an example.

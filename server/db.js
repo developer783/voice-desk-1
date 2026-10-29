@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
+// On Render, point DATA_DIR at a persistent disk; the default folder is wiped on every deploy.
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 const AUDIO_DIR = path.join(DATA_DIR, 'audio');
 const FILE = path.join(DATA_DIR, 'db.json');
 

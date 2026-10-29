@@ -1,0 +1,37 @@
+# Render Blueprint: New > Blueprint > pick this repo.
+services:
+  - type: web
+    name: voice-desk
+    runtime: node
+    # A persistent disk needs a paid instance; on the free plan data is lost on every deploy/restart.
+    plan: starter
+    region: singapore
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /healthz
+    disk:
+      name: voice-desk-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: DATA_DIR
+        value: /var/data
+      - key: SARVAM_API_KEY
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DEFAULT_COUNTRY_CODE
+        value: "+91"
+      - key: MAX_CONCURRENT_CALLS
+        value: "2"
+      # Optional, for real phone calls. PUBLIC_BASE_URL is taken from Render automatically.
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM_NUMBER
+        sync: false

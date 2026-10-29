@@ -9,6 +9,7 @@ const telephony = require('./telephony');
 
 const app = express();
 app.disable('x-powered-by');
+app.get('/healthz', (req, res) => res.send('ok'));
 
 // Twilio webhooks and generated audio must be reachable without a dashboard login.
 app.use('/twilio', require('./routes/twilio'));

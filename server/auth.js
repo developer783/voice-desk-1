@@ -39,6 +39,10 @@ router.post('/logout', (req, res) => {
 });
 
 function requireAuth(req, res, next) {
+  // Never run an open dashboard on the public internet.
+  if (process.env.RENDER && !password()) {
+    return res.status(503).json({ error: 'Set APP_PASSWORD in the Render environment settings to use the dashboard' });
+  }
   if (isAuthed(req)) return next();
   res.status(401).json({ error: 'Not signed in' });
 }

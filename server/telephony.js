@@ -2,12 +2,14 @@
 const crypto = require('crypto');
 
 const env = (k) => (process.env[k] || '').trim();
-const publicBase = () => env('PUBLIC_BASE_URL').replace(/\/+$/, '');
+// Render sets RENDER_EXTERNAL_URL automatically, so PUBLIC_BASE_URL is optional there.
+const publicBase = () => (env('PUBLIC_BASE_URL') || env('RENDER_EXTERNAL_URL')).replace(/\/+$/, '');
 const authHeader = () => 'Basic ' + Buffer.from(`${env('TWILIO_ACCOUNT_SID')}:${env('TWILIO_AUTH_TOKEN')}`).toString('base64');
 const apiBase = () => `https://api.twilio.com/2010-04-01/Accounts/${env('TWILIO_ACCOUNT_SID')}`;
 
 function status() {
-  const missing = ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_FROM_NUMBER', 'PUBLIC_BASE_URL'].filter((k) => !env(k));
+  const missing = ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_FROM_NUMBER'].filter((k) => !env(k));
+  if (!publicBase()) missing.push('PUBLIC_BASE_URL');
   const from = env('TWILIO_FROM_NUMBER');
   return {
     provider: 'twilio',
